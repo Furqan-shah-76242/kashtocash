@@ -1,0 +1,9 @@
+﻿@model List<kashtocash.Models.CartItem>
+
+    <h2>Your Cart</h2>
+    <ul>
+        @foreach (var item in Model)
+        {
+        <li>@item.Title - Qty: @item.Quantity - Price: @item.Price</li>
+        }
+    </ul>
