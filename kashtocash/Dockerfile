@@ -1,22 +1,24 @@
-# Use official .NET 8 runtime as base
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 80
-
-# Build stage using .NET SDK
+# Use the official .NET SDK image for building the app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
+WORKDIR /source
 
-# Copy and restore the project
-COPY ["kashtocash.fsproj", "./"]
-RUN dotnet restore "kashtocash.fsproj"
+# Copy csproj and restore as distinct layers
+COPY *.sln .
+COPY KashtoCash/*.csproj ./KashtoCash/
+RUN dotnet restore
 
 # Copy everything else and build
-COPY . .
-RUN dotnet publish "kashtocash.fsproj" -c Release -o /app/publish
+COPY KashtoCash/. ./KashtoCash/
+WORKDIR /source/KashtoCash
+RUN dotnet publish -c Release -o /app/publish
 
-# Final stage
-FROM base AS final
+# Use the ASP.NET runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "kashtocash.dll"]
+
+# Expose port (optional for local testing)
+EXPOSE 8080
+
+# Start the app
+ENTRYPOINT ["dotnet", "KashtoCash.dll"]
